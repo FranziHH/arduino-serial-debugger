@@ -1,0 +1,31 @@
+
+https://web.archive.org/web/20240706045800/https://forum.sparkfun.com/viewtopic.php?f=96&t=53770
+
+------------------------------------------------------------------------------------------------------------------------
+
+Hi All,
+
+I recently bought some Pro Micros for the first time. (Fantastic! For software testing I needed to enter lots of data into a target computer that is in a VM and 2 remote desktop jumps from my PC. The Pro Micro did the job. Rather strange running a program on my PC talking serial to Pro Micro, sending mouse+keys back up the same wire to the same computer.)
+
+It may have been my computer, but the Arduino IDE usually failed to load the Pro Micro. The automatic way failed, and I could never press the reset at the right time. So I looked at using a bat file and it works perfectly, 99/100 instead of 1/10. (The tutorial part about reloading the boot program says only 8 seconds to do something. I haven't needed this yet but it's probably easier with a bat file.)
+
+Save the code below as e.g. Pro_Micro_Build.bat in a normal Arduino sketch directory. It gets the directory and filenames automatically. You have to check and maybe edit four things: board-type, com port, Arduino location, Avrdude location. It compiles the sketch, prompts you to reset the Pro Micro, then uses mode and find to wait for the port to appear. (Clunky but it works.) It uses Avrdude to load the board. (Command lifted from IDE console.) It’s slightly faster if you hold the reset and let go when prompted to reset.
+
+I've seen a few posts about difficulties loading the Pro Micro so I hope this helps.
+
+Richard.
+
+------------------------------------------------------------------------------------------------------------------------
+
+Hallo zusammen,
+
+Ich habe kürzlich zum ersten Mal ein paar Pro -Micros gekauft. (Fantastisch! Für Softwaretests musste ich viele Daten in einen Zielcomputer eingeben, der sich in einem VM- und 2 Remote -Desktop -Sprüngen von meinem PC befindet. Der Pro Micro hat den Job gemacht. Ziemlich seltsame Ausführung eines Programms auf meinem PC, der seriell mit Pro spricht zu Pro Micro, Senden von Maus+Tasten denselben Kabel auf denselben Computer.)
+
+Es mag mein Computer gewesen sein, aber die Arduino -IDE konnte das Pro -Mikro normalerweise nicht laden. Der automatische Weg scheiterte und ich konnte den Reset niemals zum richtigen Zeitpunkt drücken. Also habe ich mich mit einer Fledermausdatei angesehen und sie funktioniert perfekt, 99/100 anstelle von 1/10. (Der Tutorial -Teil über das Neuladen des Boot -Programms sagt nur 8 Sekunden an, um etwas zu tun. Ich habe dies noch nicht gebraucht, aber es ist wahrscheinlich einfacher mit einer Fledermausdatei.)
+
+Speichern Sie den folgenden Code als EG pro_micro_build.bat in einem normalen Arduino -Skizzenverzeichnis. Es erhält das Verzeichnis und die Dateinamen automatisch. Sie müssen vier Dinge überprüfen und bearbeiten: Board-Typ, COM-Port, Arduino-Standort, Avrdude-Standort. Es kompiliert die Skizze, fordert Sie auf, das Pro Micro zurückzusetzen, und verwendet den Modus und findet, um zu warten, bis der Port angezeigt wird. (Klobig, aber es funktioniert.) Es verwendet AvrDude, um das Board zu laden. (Befehl, der von der IDE -Konsole aufgehoben wurde.) Wenn Sie den Reset halten und loslassen, wenn Sie zum Zurücksetzen aufgefordert werden.
+
+Ich habe ein paar Beiträge über Schwierigkeiten gesehen, das Pro Micro zu laden, also hoffe ich, dass dies hilft.
+
+Richard. 
+
