@@ -38,6 +38,21 @@ rename / or copy this File to config.h
   #endif
 #endif
 
+#if defined(ESP8266)
+  // ESP8266 Boards
+
+  // I2C: SDA - D2 (GPIO4), SCL - D1 (GPIO5)
+  // Serial: RX - GPIO3, TX - GPIO1
+
+    // Buttons PIN
+    #define BAUD_PIN D5
+    #define MODE_PIN D6
+    #define CLS_PIN  D7
+
+    // Define Display: Display Defines, see U8g2 Contructor List.txt
+    U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
+#endif
+
 #if defined(ESP32)
   // ESP32 Boards
 
@@ -45,8 +60,8 @@ rename / or copy this File to config.h
   // Serial: RX - 16, TX - 17
 
   // Buttons PIN
-  #define BAUD_PIN 19
-  #define MODE_PIN 14
+  #define BAUD_PIN 14
+  #define MODE_PIN 19
   #define CLS_PIN  18
 
   // Define Display: Display Defines, see U8g2 Contructor List.txt

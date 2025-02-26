@@ -16,7 +16,12 @@
 #define DISPLAY_HEX 'H'
 #define DISPLAY_BIN 'B'
 
+/* Print Serial Input to Serial Console 
+ * ! only when second hardware serial available !
+ */
 #define DEBUG
+/* print Button Actions */
+#define DEBUG_MSG
 
 // include config
 #include "config.h"
@@ -26,10 +31,12 @@
 
   #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
     //Code in here will only be compiled if an Arduino Uno (or older) is used.
-    #if defined(DEBUG)
+    #if defined(DEBUG) || defined(DEBUG_MSG)
       #undef DEBUG
+      #undef DEBUG_MSG
       #warning Disable Debug - Only one Serial available!
     #endif
+
     #define mySerial Serial
     #define RECOGNIZED
   #endif
@@ -43,20 +50,24 @@
 
 // ============================================================================
 
-
 #if defined(ESP8266)
-    #if defined(DEBUG)
-      #undef DEBUG
-      #warning Disable Debug - Only one Serial available!
-    #endif
-    #define mySerial Serial
-    #define RECOGNIZED
-#endif
+  #define ISR_ATTR ICACHE_RAM_ATTR
 
+  #if defined(DEBUG) || defined(DEBUG_MSG)
+    #undef DEBUG
+    #undef DEBUG_MSG
+    #warning Disable Debug - Only one Serial available!
+  #endif
+
+  #define mySerial Serial
+  #define RECOGNIZED
+#endif
 
 // ============================================================================
 
 #if defined(ESP32)
+  #define ISR_ATTR IRAM_ATTR
+
   #include <HardwareSerial.h>
   HardwareSerial mySerial(2);
   #define RECOGNIZED
@@ -68,6 +79,14 @@
   #error Board was not recognized
 #endif
 
+#ifndef ISR_ATTR
+  #define ISR_ATTR 
+#endif
+
+#if defined(DEBUG_MSG) && !defined(DEBUG) 
+  #define DEBUG
+#endif
+
 #ifdef U8X8_HAVE_HW_SPI
   #include <SPI.h>
 #endif
@@ -75,22 +94,45 @@
   #include <Wire.h>
 #endif
 
-String str[8];
-String tmp;
-
 unsigned long baud = BAUD_DEFAULT;
 char mode = DISPLAY_DEFAULT;
 
-// ============================================================================
-
-boolean changed = true;
+String str[8];
+String tmp;
+boolean isStartScreen = true;
+boolean changed = false;
+boolean changedMode = false;
 boolean changedBaud = false;
+boolean changedScreen = false;
+byte strLen = 0;
+
+// ============================================================================
 
 void loop(void) {
   if (changedBaud) {
     mySerial.end(); 
     mySerial.begin(baud); 
     changedBaud = false;
+    changed = true;
+    #if defined(DEBUG_MSG)
+      Serial.print("Baud ");
+      Serial.println(baud);
+    #endif
+  }
+  if (changedMode) {
+    changedMode = false;
+    changed = true;
+    #if defined(DEBUG_MSG)
+      Serial.print("Mode ");
+      Serial.println(mode);
+    #endif
+  }
+  if (changedScreen) {
+    changedScreen = false;
+    changed = true;
+    #if defined(DEBUG_MSG)
+      Serial.println("Clear Screen");
+    #endif
   }
   readStr();
   if (changed) {
@@ -120,7 +162,6 @@ void writeOLED() {
 
 // ============================================================================
 
-byte strLen = 0;
 void readStr() {
   while ( mySerial.available() > 0 ) {
     char inChar = (char) mySerial.read();
@@ -161,6 +202,12 @@ void readStr() {
         break;
       default: break;
     }
+
+    if (isStartScreen) {
+      for (byte i = 1; i < 8; i++) str[i] = "";
+      isStartScreen = false;
+    }
+
     changed = true;
   }
 }
@@ -180,193 +227,51 @@ void newLine() {
 
 // ============================================================================
 
-#if defined(__AVR__)
-
-  // ============================================================================
-
-  void changeBaud() {
-    if (baud == 1200) {
-      baud =  2400;
-    } else if (baud == 2400) {
-      baud =  4800;
-    } else if (baud == 4800) {
-      baud =  9600;
-    } else if (baud == 9600) {
-      baud =  19200;
-    } else if (baud ==  19200) {
-      baud =  38400;
-    } else if (baud ==  38400) {
-      baud =  57600;
-    } else if (baud ==  57600) {
-      baud =  115200;
-    } else if (baud == 115200) {
-      baud = 230400;
-    } else if (baud == 230400) {
-      baud = 1200;
-    }
-    #if defined(DEBUG)
-      Serial.print("changeBaud ");
-      Serial.println(baud);
-    #endif
-    changedBaud = true;
-    changed = true;
+void ISR_ATTR changeBaud() {
+  if (baud == 1200) {
+    baud =  2400;
+  } else if (baud == 2400 ) {
+    baud =  4800;
+  } else if (baud == 4800 ) {
+    baud =  9600;
+  } else if (baud == 9600 ) {
+    baud =  19200;
+  } else if (baud ==  19200 ) {
+    baud =  38400;
+  } else if (baud ==  38400 ) {
+    baud =  57600;
+  } else if (baud ==  57600 ) {
+    baud =  115200;
+  } else if (baud == 115200 ) {
+    baud = 230400;
+  } else if (baud == 230400 ) {
+    baud = 1200;
   }
+  changedBaud = true;
+}
 
-  // ============================================================================
+// ============================================================================
 
-  void changeMode() {
-    if (mode == DISPLAY_TXT) {
-      mode = DISPLAY_HEX;
-    } else if (mode == DISPLAY_HEX) {
-      mode = DISPLAY_BIN;    
-    } else if (mode == DISPLAY_BIN ) {
-      mode = DISPLAY_TXT;
-    }
-    #if defined(DEBUG)
-      Serial.print("mode ");
-      Serial.println(mode);
-    #endif
-    changed = true;
+void ISR_ATTR changeMode() {
+  if (mode == DISPLAY_TXT) {
+    mode = DISPLAY_HEX;
+  } else if (mode == DISPLAY_HEX) {
+    mode = DISPLAY_BIN;    
+  } else if (mode == DISPLAY_BIN) {
+    mode = DISPLAY_TXT;
   }
+  changedMode = true;
+}
 
-  // ============================================================================
+// ============================================================================
 
-  void clearScreen() {
-    for ( byte i = 7; i > 0; i-- ) {
-      str[i] = "";
-    }
-    str[0] = "";
-    strLen = 0;
-    changed = true;
+void ISR_ATTR clearScreen() {
+  for (byte i = 0; i < 8; i++) {
+    str[i] = "";
   }
-
-  // ============================================================================
-
-  #elif defined(ESP8266)
-
-  // ============================================================================
-
-  void ICACHE_RAM_ATTR changeBaud() {
-    if (baud == 1200) {
-      baud =  2400;
-    } else if (baud == 2400 ) {
-      baud =  4800;
-    } else if (baud == 4800 ) {
-      baud =  9600;
-    } else if (baud == 9600 ) {
-      baud =  19200;
-    } else if (baud ==  19200 ) {
-      baud =  38400;
-    } else if (baud ==  38400 ) {
-      baud =  57600;
-    } else if (baud ==  57600 ) {
-      baud =  115200;
-    } else if (baud == 115200 ) {
-      baud = 230400;
-    } else if (baud == 230400 ) {
-      baud = 1200;
-    }
-    #if defined(DEBUG)
-      Serial.print("changeBaud ");
-      Serial.println(baud);
-    #endif
-    changedBaud = true;
-    changed = true;
-  }
-
-  // ============================================================================
-
-  void ICACHE_RAM_ATTR changeMode() {
-    if (mode == DISPLAY_TXT) {
-      mode = DISPLAY_HEX;
-    } else if (mode == DISPLAY_HEX) {
-      mode = DISPLAY_BIN;    
-    } else if (mode == DISPLAY_BIN) {
-      mode = DISPLAY_TXT;
-    }
-    #if defined(DEBUG)
-      Serial.print("mode ");
-      Serial.println(mode);
-    #endif
-    changed = true;
-  }
-
-  // ============================================================================
-
-  void ICACHE_RAM_ATTR clearScreen() {
-    for ( byte i = 7; i > 0; i-- ) {
-      str[i] = "";
-    }
-    str[0] = "";
-    strLen = 0;
-    changed = true;
-  }
-
-  // ============================================================================
-
-#elif defined(ESP32)
-
-  // ============================================================================
-
-  void IRAM_ATTR changeBaud() {
-    if (baud == 1200) {
-      baud =  2400;
-    } else if (baud == 2400 ) {
-      baud =  4800;
-    } else if (baud == 4800 ) {
-      baud =  9600;
-    } else if (baud == 9600 ) {
-      baud =  19200;
-    } else if (baud ==  19200 ) {
-      baud =  38400;
-    } else if (baud ==  38400 ) {
-      baud =  57600;
-    } else if (baud ==  57600 ) {
-      baud =  115200;
-    } else if (baud == 115200 ) {
-      baud = 230400;
-    } else if (baud == 230400 ) {
-      baud = 1200;
-    }
-    #if defined(DEBUG)
-      Serial.print("changeBaud ");
-      Serial.println(baud);
-    #endif
-    changedBaud = true;
-    changed = true;
-  }
-
-  // ============================================================================
-
-  void IRAM_ATTR changeMode() {
-    if (mode == DISPLAY_TXT) {
-      mode = DISPLAY_HEX;
-    } else if (mode == DISPLAY_HEX) {
-      mode = DISPLAY_BIN;    
-    } else if (mode == DISPLAY_BIN) {
-      mode = DISPLAY_TXT;
-    }
-    #if defined(DEBUG)
-      Serial.print("mode ");
-      Serial.println(mode);
-    #endif
-    changed = true;
-  }
-
-  // ============================================================================
-
-  void IRAM_ATTR clearScreen() {
-    for ( byte i = 7; i > 0; i-- ) {
-      str[i] = "";
-    }
-    str[0] = "";
-    strLen = 0;
-    changed = true;
-  }
-
-  // ============================================================================
-
-#endif
+  strLen = 0;
+  changedScreen = true;
+}
 
 // ============================================================================
 
@@ -377,7 +282,7 @@ void setup(void) {
   mySerial.begin(baud); 
   u8g2.begin();
 
-  for ( byte i=0; i< 8 ;i++ ) {
+  for ( byte i = 0; i < 8; i++ ) {
     str[i].reserve(25);
     str[i] = "";
   }
@@ -414,7 +319,7 @@ void setup(void) {
     clearScreen, 
     RISING   
   );
-#elif defined(ESP32)
+#elif defined(ESP32) || defined(ESP8266)
   attachInterrupt(BAUD_PIN, changeBaud, RISING);
   attachInterrupt(MODE_PIN, changeMode, RISING);
   attachInterrupt(CLS_PIN, clearScreen, RISING);
