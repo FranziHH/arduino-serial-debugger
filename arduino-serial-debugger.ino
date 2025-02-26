@@ -43,11 +43,16 @@
 
 // ============================================================================
 
-/* 
-#if defined(ESP8266)
 
+#if defined(ESP8266)
+    #if defined(DEBUG)
+      #undef DEBUG
+      #warning Disable Debug - Only one Serial available!
+    #endif
+    #define mySerial Serial
+    #define RECOGNIZED
 #endif
-*/
+
 
 // ============================================================================
 
@@ -227,6 +232,68 @@ void newLine() {
   // ============================================================================
 
   void clearScreen() {
+    for ( byte i = 7; i > 0; i-- ) {
+      str[i] = "";
+    }
+    str[0] = "";
+    strLen = 0;
+    changed = true;
+  }
+
+  // ============================================================================
+
+  #elif defined(ESP8266)
+
+  // ============================================================================
+
+  void ICACHE_RAM_ATTR changeBaud() {
+    if (baud == 1200) {
+      baud =  2400;
+    } else if (baud == 2400 ) {
+      baud =  4800;
+    } else if (baud == 4800 ) {
+      baud =  9600;
+    } else if (baud == 9600 ) {
+      baud =  19200;
+    } else if (baud ==  19200 ) {
+      baud =  38400;
+    } else if (baud ==  38400 ) {
+      baud =  57600;
+    } else if (baud ==  57600 ) {
+      baud =  115200;
+    } else if (baud == 115200 ) {
+      baud = 230400;
+    } else if (baud == 230400 ) {
+      baud = 1200;
+    }
+    #if defined(DEBUG)
+      Serial.print("changeBaud ");
+      Serial.println(baud);
+    #endif
+    changedBaud = true;
+    changed = true;
+  }
+
+  // ============================================================================
+
+  void ICACHE_RAM_ATTR changeMode() {
+    if (mode == DISPLAY_TXT) {
+      mode = DISPLAY_HEX;
+    } else if (mode == DISPLAY_HEX) {
+      mode = DISPLAY_BIN;    
+    } else if (mode == DISPLAY_BIN) {
+      mode = DISPLAY_TXT;
+    }
+    #if defined(DEBUG)
+      Serial.print("mode ");
+      Serial.println(mode);
+    #endif
+    changed = true;
+  }
+
+  // ============================================================================
+
+  void ICACHE_RAM_ATTR clearScreen() {
     for ( byte i = 7; i > 0; i-- ) {
       str[i] = "";
     }
