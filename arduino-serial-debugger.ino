@@ -16,30 +16,27 @@
 #define DISPLAY_HEX 'H'
 #define DISPLAY_BIN 'B'
 
+#define DEBUG
+
 // include config
 #include "config.h"
-
-// ============================================================================
-// Display Defines, see U8g2 Contructor List.txt
-// U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
-// ============================================================================
 
 #if defined(__AVR__)
   #include "PinChangeInterrupt.h"
 
-  /*   
   #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega168__)
     //Code in here will only be compiled if an Arduino Uno (or older) is used.
-    #include <SoftwareSerial.h>
-    SoftwareSerial mySerial (rxPin, txPin);
+    #if defined(DEBUG)
+      #undef DEBUG
+      #warning Disable Debug - Only one Serial available!
+    #endif
+    #define mySerial Serial
     #define RECOGNIZED
   #endif
-  */
-
+  
   #if defined(__AVR_ATmega32U4__) || defined(__AVR_ATmega16U4__)
     //Code in here will only be compiled if an Arduino Leonardo is used.
     #define mySerial Serial1
-    U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
     #define RECOGNIZED
   #endif
 #endif
@@ -57,7 +54,6 @@
 #if defined(ESP32)
   #include <HardwareSerial.h>
   HardwareSerial mySerial(2);
-  U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
   #define RECOGNIZED
 #endif
 
@@ -167,7 +163,9 @@ void readStr() {
 // ============================================================================
 
 void newLine() {
-  Serial.println( str[0].c_str() );
+  #if defined(DEBUG)
+    Serial.println( str[0].c_str() );
+  #endif
   for ( byte i = 7; i > 0; i-- ) {
     str[i] = str[i-1];
   }
@@ -201,8 +199,10 @@ void newLine() {
     } else if (baud == 230400) {
       baud = 1200;
     }
-    //Serial.print("changeBaud ");
-    //Serial.println(baud);
+    #if defined(DEBUG)
+      Serial.print("changeBaud ");
+      Serial.println(baud);
+    #endif
     changedBaud = true;
     changed = true;
   }
@@ -217,8 +217,10 @@ void newLine() {
     } else if (mode == DISPLAY_BIN ) {
       mode = DISPLAY_TXT;
     }
-    //Serial.print("mode ");
-    //Serial.println(mode);
+    #if defined(DEBUG)
+      Serial.print("mode ");
+      Serial.println(mode);
+    #endif
     changed = true;
   }
 
@@ -259,8 +261,10 @@ void newLine() {
     } else if (baud == 230400 ) {
       baud = 1200;
     }
-    //Serial.print("changeBaud ");
-    //Serial.println(baud);
+    #if defined(DEBUG)
+      Serial.print("changeBaud ");
+      Serial.println(baud);
+    #endif
     changedBaud = true;
     changed = true;
   }
@@ -275,8 +279,10 @@ void newLine() {
     } else if (mode == DISPLAY_BIN) {
       mode = DISPLAY_TXT;
     }
-    //Serial.print("mode ");
-    //Serial.println(mode);
+    #if defined(DEBUG)
+      Serial.print("mode ");
+      Serial.println(mode);
+    #endif
     changed = true;
   }
 
@@ -298,7 +304,9 @@ void newLine() {
 // ============================================================================
 
 void setup(void) {
-  Serial.begin(9600); 
+  #if defined(DEBUG)
+    Serial.begin(9600); 
+  #endif
   mySerial.begin(baud); 
   u8g2.begin();
 
@@ -314,8 +322,10 @@ void setup(void) {
   str[1] = "      FRANZI.HAMBURG";
   str[0] = "";
 
-  Serial.println("SERIAL PORT DEBUGGER v3");
-  
+  #if defined(DEBUG)
+    Serial.println("SERIAL PORT DEBUGGER v3");
+  #endif
+
   // button config
   pinMode(BAUD_PIN, INPUT_PULLUP);
   pinMode(MODE_PIN, INPUT_PULLUP);

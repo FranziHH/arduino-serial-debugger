@@ -14,6 +14,10 @@ I've made a YouTube video about this project (German):
 https://youtu.be/XUHYciV1GeM
 
 
+# New
+- Boards Arduino Nano and Uno added: Here debugging is disabled, there is only a hardware serial interface
+- The display definition has been moved to config.h. Individual settings are possible here.
+
 # Changes
 - for easier use converted to vsCode
 - third Button: Clear Screen added
