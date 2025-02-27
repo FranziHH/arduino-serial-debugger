@@ -319,7 +319,8 @@ void setup(void) {
     clearScreen, 
     RISING   
   );
-#elif defined(ESP32) || defined(ESP8266)
+// #elif defined(ESP32) || defined(ESP8266)
+#else
   attachInterrupt(BAUD_PIN, changeBaud, RISING);
   attachInterrupt(MODE_PIN, changeMode, RISING);
   attachInterrupt(CLS_PIN, clearScreen, RISING);

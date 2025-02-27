@@ -1,6 +1,8 @@
 # ! Fork From arduino-serial-debugger
 This is Forked From https://github.com/ma-ha/arduino-serial-debugger
 
+<img src="/Images/IMG_20250227_100744.jpg" height="400px" title="Final Device with 18650 Battery"> 
+
 # arduino-serial-debugger
 
 Wire a Arduino Micro with a I2C OLED and 2 buttons, put it in a case 
