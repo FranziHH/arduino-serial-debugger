@@ -2,6 +2,8 @@
 This is Forked From https://github.com/ma-ha/arduino-serial-debugger
 
 <img src="/Images/IMG_20250227_100744.jpg" height="400px" title="Final Device with 18650 Battery"> 
+<img src="/Images/IMG_20250303_201101.jpg" height="400px" title="Final Device Input HC12 wireless"> 
+<img src="/Images/IMG_20250303_201216.jpg" height="400px" title="Final Device Input RS485"> 
 
 # arduino-serial-debugger
 
