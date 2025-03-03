@@ -60,16 +60,33 @@ rename / or copy this File to config.h
   // Serial: RX - 16, TX - 17
 
   // Buttons PIN
-  #define BAUD_PIN 14
-  #define MODE_PIN 19
-  #define CLS_PIN  18
+  #define BAUD_PIN 27
+  #define MODE_PIN 26
+  #define CLS_PIN  25
+
+  /* 
+    INPUT_PIN_X is optional !
+    if INPUT_PIN_X is defined, 
+    the other definitions must also be defined
+  */
+  // input switch
+  #define INP_PIN_1 18
+  #define INP_TXT_1 "RS232 WLESS"
+  #define DISPLAY_DEFAULT_1 DISPLAY_TXT
+  #define BAUD_DEFAULT_1 115200
+
+  #define INP_PIN_2 19
+  #define INP_TXT_2 "RS485"
+  #define DISPLAY_DEFAULT_2 DISPLAY_HEX
+  #define BAUD_DEFAULT_2 9600
 
   // Define Display: Display Defines, see U8g2 Contructor List.txt
   U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
 #endif
 
 // Defaults at Start
+#define INP_TXT_0 "RS232"
 // DISPLAY_TXT / DISPLAY_HEX / DISPLAY_BIN
-#define DISPLAY_DEFAULT DISPLAY_TXT
+#define DISPLAY_DEFAULT_0 DISPLAY_HEX
 // 1200 / 2400 / 4800 / 9600 / 19200 / 38400 / 57500 / 115200 / 230400
-#define BAUD_DEFAULT 115200
+#define BAUD_DEFAULT_0 19200

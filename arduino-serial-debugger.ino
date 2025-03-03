@@ -94,8 +94,8 @@
   #include <Wire.h>
 #endif
 
-unsigned long baud = BAUD_DEFAULT;
-char mode = DISPLAY_DEFAULT;
+unsigned long baud = BAUD_DEFAULT_0;
+char mode = DISPLAY_DEFAULT_0;
 
 String str[8];
 String tmp;
@@ -105,10 +105,47 @@ boolean changedMode = false;
 boolean changedBaud = false;
 boolean changedScreen = false;
 byte strLen = 0;
+byte inputMode = 0;
+byte lastInputMode = 0;
+
+// ============================================================================
+
+void readInputSwitch() {
+  inputMode = 0;
+  #if defined(INP_PIN_1)
+    if (digitalRead(INP_PIN_1) == LOW) {
+      inputMode = 1;
+    }
+  #endif
+  #if defined(INP_PIN_2)
+    if (digitalRead(INP_PIN_2) == LOW) {
+      inputMode = 2;
+    }
+  #endif
+  if (inputMode != lastInputMode) {
+    switch (inputMode) {
+      #if defined(INP_PIN_1)
+      case 1: baud = BAUD_DEFAULT_1; mode = DISPLAY_DEFAULT_1; break;
+      #endif
+      #if defined(INP_PIN_2)
+      case 2: baud = BAUD_DEFAULT_2; mode = DISPLAY_DEFAULT_2; break;
+      #endif
+      default: baud = BAUD_DEFAULT_0; mode = DISPLAY_DEFAULT_0; break;
+    }
+    // clear screen
+    if (!isStartScreen) for (byte i = 0; i < 8; i++) str[i] = "";
+    changedBaud = true;
+    changedMode = true;
+    lastInputMode = inputMode;
+    changed = true; // is double ..
+  }
+}
 
 // ============================================================================
 
 void loop(void) {
+  readInputSwitch();
+
   if (changedBaud) {
     mySerial.end(); 
     mySerial.begin(baud); 
@@ -156,6 +193,15 @@ void writeOLED() {
     case DISPLAY_BIN: u8g2.drawStr( 85, 5, "B" ); break;
     case DISPLAY_HEX: u8g2.drawStr( 85, 5, "H" ); break;
     default: u8g2.drawStr( 85, 5, "t" ); break;
+  }
+  switch (inputMode) {
+    #if defined(INP_PIN_1)
+    case 1: u8g2.drawStr( 0, 5, INP_TXT_1 ); break;
+    #endif
+    #if defined(INP_PIN_2)
+    case 2: u8g2.drawStr( 0, 5, INP_TXT_2 ); break;
+    #endif
+    default: u8g2.drawStr( 0, 5, INP_TXT_0 ); break;
   }
   u8g2.sendBuffer();    
 }
@@ -302,6 +348,12 @@ void setup(void) {
   pinMode(BAUD_PIN, INPUT_PULLUP);
   pinMode(MODE_PIN, INPUT_PULLUP);
   pinMode(CLS_PIN, INPUT_PULLUP);
+  #if defined(INP_PIN_1)
+    pinMode(INP_PIN_1, INPUT_PULLUP);
+  #endif
+  #if defined(INP_PIN_2)
+    pinMode(INP_PIN_2, INPUT_PULLUP);
+  #endif
 
 #if defined(__AVR__)
   attachPinChangeInterrupt( 
@@ -326,6 +378,7 @@ void setup(void) {
   attachInterrupt(CLS_PIN, clearScreen, RISING);
 #endif
 
+  readInputSwitch();
   writeOLED();
   delay(1000);
 
