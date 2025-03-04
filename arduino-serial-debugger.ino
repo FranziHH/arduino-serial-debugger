@@ -107,6 +107,8 @@ boolean changedScreen = false;
 byte strLen = 0;
 byte inputMode = 0;
 byte lastInputMode = 0;
+byte debounceTime = 100;
+unsigned long lastTime[4];
 
 // ============================================================================
 
@@ -249,7 +251,7 @@ void readStr() {
       default: break;
     }
 
-    if (isStartScreen) {
+    if (isStartScreen && ((millis() - lastTime[0]) > 1000)) {
       for (byte i = 1; i < 8; i++) str[i] = "";
       isStartScreen = false;
     }
@@ -274,49 +276,58 @@ void newLine() {
 // ============================================================================
 
 void ISR_ATTR changeBaud() {
-  if (baud == 1200) {
-    baud =  2400;
-  } else if (baud == 2400 ) {
-    baud =  4800;
-  } else if (baud == 4800 ) {
-    baud =  9600;
-  } else if (baud == 9600 ) {
-    baud =  19200;
-  } else if (baud ==  19200 ) {
-    baud =  38400;
-  } else if (baud ==  38400 ) {
-    baud =  57600;
-  } else if (baud ==  57600 ) {
-    baud =  115200;
-  } else if (baud == 115200 ) {
-    baud = 230400;
-  } else if (baud == 230400 ) {
-    baud = 1200;
+  if ((millis() - lastTime[1]) > debounceTime) {
+    lastTime[1] = millis();
+    if (baud == 1200) {
+      baud =  2400;
+    } else if (baud == 2400 ) {
+      baud =  4800;
+    } else if (baud == 4800 ) {
+      baud =  9600;
+    } else if (baud == 9600 ) {
+      baud =  19200;
+    } else if (baud ==  19200 ) {
+      baud =  38400;
+    } else if (baud ==  38400 ) {
+      baud =  57600;
+    } else if (baud ==  57600 ) {
+      baud =  115200;
+    } else if (baud == 115200 ) {
+      baud = 230400;
+    } else if (baud == 230400 ) {
+      baud = 1200;
+    }
+    changedBaud = true;
   }
-  changedBaud = true;
 }
 
 // ============================================================================
 
 void ISR_ATTR changeMode() {
-  if (mode == DISPLAY_TXT) {
-    mode = DISPLAY_HEX;
-  } else if (mode == DISPLAY_HEX) {
-    mode = DISPLAY_BIN;    
-  } else if (mode == DISPLAY_BIN) {
-    mode = DISPLAY_TXT;
+  if ((millis() - lastTime[2]) > debounceTime) {
+    lastTime[2] = millis();
+    if (mode == DISPLAY_TXT) {
+      mode = DISPLAY_HEX;
+    } else if (mode == DISPLAY_HEX) {
+      mode = DISPLAY_BIN;    
+    } else if (mode == DISPLAY_BIN) {
+      mode = DISPLAY_TXT;
+    }
+    changedMode = true;
   }
-  changedMode = true;
 }
 
 // ============================================================================
 
 void ISR_ATTR clearScreen() {
-  for (byte i = 0; i < 8; i++) {
-    str[i] = "";
+  if ((millis() - lastTime[3]) > debounceTime) {
+    lastTime[3] = millis();
+    for (byte i = 0; i < 8; i++) {
+      str[i] = "";
+    }
+    strLen = 0;
+    changedScreen = true;
   }
-  strLen = 0;
-  changedScreen = true;
 }
 
 // ============================================================================
@@ -380,6 +391,6 @@ void setup(void) {
 
   readInputSwitch();
   writeOLED();
-  delay(1000);
+  lastTime[0] = millis();
 
 }
