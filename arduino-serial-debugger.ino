@@ -343,16 +343,16 @@ void setup(void) {
     str[i].reserve(25);
     str[i] = "";
   }
-  str[6] = "  SERIAL PORT DEBUGGER V3";
+  str[6] = "  SERIAL PORT DEBUGGER V4";
   str[5] = "            BY";
   str[4] = "      MAKER GARAGE DE";
   str[3] = "  ----------------------";
-  str[2] = "     2025/02 ADAPTED BY";
+  str[2] = "    2025/03 ADAPTED BY";
   str[1] = "      FRANZI.HAMBURG";
   str[0] = "";
 
   #if defined(DEBUG)
-    Serial.println("SERIAL PORT DEBUGGER v3");
+    Serial.println("SERIAL PORT DEBUGGER v4");
   #endif
 
   // button config
